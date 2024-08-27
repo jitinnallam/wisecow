@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-and-push:
@@ -16,13 +19,12 @@ jobs:
         uses: docker/login-action@v1
         with:
           username: jitinnallam
-          password: ${{ secrets.DOCKER_PASSWORD }}
+          password: Jitin@2590
 
       - name: Build and Push Docker Image
         run: |
           docker build -t jitinnallam/wisecow:latest .
           docker push jitinnallam/wisecow:latest
-
       - name: Deploy to Kubernetes
         uses: kubernetes/deploy-action@v1
         with:
@@ -72,8 +74,13 @@ jobs:
           DIGEST: ${{ steps.build-and-push.outputs.digest }}
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
 
-  pull_request:
-    branches: [ "main" ]
+  pull-request-job:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Run a command
+        run: echo "This is a pull request job"
 
 env:
   REGISTRY: ghcr.io

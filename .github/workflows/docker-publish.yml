@@ -1,17 +1,35 @@
-name: Docker
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+name: Build and Push Docker Image
 
 on:
-  schedule:
-    - cron: '39 10 * * *'
   push:
-    branches: [ "main" ]
-    # Publish semver tags as releases.
-    tags: [ 'v*.*.*' ]
+    branches:
+      - main
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: jitinnallam
+          password: Jitin@2590
+
+      - name: Build and Push Docker Image
+        run: |
+          docker build -t jitinnallam/wisecow:latest .
+          docker push jitinnallam/wisecow:latest
+
+      - name: Deploy to Kubernetes
+        uses: kubernetes/deploy-action@v1
+        with:
+          kubeconfig: ${{ secrets.KUBECONFIG }}
+          deployment: wisecow-deployment
+          container: wisecow
+          image: jitinnallam/wisecow:latest
   pull_request:
     branches: [ "main" ]
 
